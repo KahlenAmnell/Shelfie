@@ -2,6 +2,7 @@ package com.bernat.shelfie
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -17,15 +18,23 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.navigation.NavController
 
 @Composable
-fun LoginScreen(navController: NavController){
+fun LoginScreen(navController: NavController,accountViewModel: AccountViewModel){
     var emailTextFieldText by remember{mutableStateOf("")}
     var passwordextFieldText by remember{mutableStateOf("")}
 
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally){
         TextField(emailTextFieldText,{emailTextFieldText=it}, label = {Text("email")})
-        TextField(passwordextFieldText,{emailTextFieldText=it}, label = {Text("password")}, visualTransformation = PasswordVisualTransformation())
-        Button({}) {
-            Text("Login")
+        TextField(passwordextFieldText,{passwordextFieldText=it}, label = {Text("password")}, visualTransformation = PasswordVisualTransformation())
+        Row() {
+            Button({
+                accountViewModel.onLogin(emailTextFieldText,passwordextFieldText)
+                navController.navigate(Navigation.StartScreen.route)
+            }) {
+                Text("Login")
+            }
+            Button({navController.navigate(Navigation.RegiserScreen.route)}) {
+                Text("Register")
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.layout.Box
@@ -11,8 +12,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,21 +32,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.bernat.shelfie.ui.theme.ShelfieTheme
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 
 sealed class Navigation(val route:String){
         object StartScreen: Navigation(route = "startScreen")
         object LoginScreen: Navigation(route = "loginScreen")
+        object RegiserScreen: Navigation(route = "registerScreen")
+
+        object AddBookScreen: Navigation(route = "addBookScreen")
+        object HomeScreen: Navigation(route = "HomeScreen")
 }
 
 
+
+
+
 class MainActivity : ComponentActivity() {
+
+    private val accountViewModel by viewModels<AccountViewModel>(
+        factoryProducer = {
+            object : ViewModelProvider.Factory{
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return AccountViewModel() as T
+                }
+            }
+        }
+    )
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -48,7 +77,7 @@ class MainActivity : ComponentActivity() {
             ShelfieTheme {
                 Surface(Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
-                    NavController(navController)
+                    NavController(navController,accountViewModel)
                 }
             }
         }
@@ -58,10 +87,37 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun NavController(navController: NavHostController){
-    NavHost(navController, startDestination = Navigation.StartScreen.route){
-        composable(Navigation.StartScreen.route) { StartScreen(navController) }
-        composable(Navigation.LoginScreen.route) {LoginScreen(navController)  }
+fun NavController(navController: NavHostController,accountViewModel: AccountViewModel){
+    Scaffold(
+        bottomBar = {
+            NavigationBar() {
+                NavigationBarItem(false,{navController.navigate(Navigation.StartScreen.route)}, icon = {Text("Profile")})
+                NavigationBarItem(false,{navController.navigate(Navigation.LoginScreen.route)}, icon = {Text("Login")})
+            }
+        }
+
+    ) { innerPading->
+        NavHost(navController, startDestination = Navigation.StartScreen.route, Modifier.padding(innerPading)) {
+            composable(Navigation.StartScreen.route) {
+                if (Firebase.auth.currentUser == null) {
+                    StartScreen(navController)
+                } else {
+                    ProfileScreen(navController, accountViewModel)
+                }
+            }
+            composable(Navigation.LoginScreen.route) {
+                LoginScreen(
+                    navController,
+                    accountViewModel
+                )
+            }
+            composable(Navigation.RegiserScreen.route) {
+                RegisterScreen(
+                    navController,
+                    accountViewModel
+                )
+            }
+        }
     }
 }
 
@@ -98,17 +154,7 @@ fun StartScreen(navController: NavController){
 
                     )
                 }
-                Button({}) {
-                    Text(
-                        text = "Register",
-                        style = TextStyle(
-                            fontFamily = FontFamily.SansSerif,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp
-                        )
 
-                    )
-                }
             }
         }
     }
