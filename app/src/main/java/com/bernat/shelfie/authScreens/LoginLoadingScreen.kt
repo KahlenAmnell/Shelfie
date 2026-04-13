@@ -62,7 +62,7 @@ fun LoginLoadingScreen(navController: NavController){
 
 
         if(Firebase.auth.currentUser!= null) {
-            navController.navigate(Navigation.StartScreen.route)
+            navController.navigate(Navigation.HomeScreen.route)
             Toast.makeText(context,"Logowanie się powiodło", Toast.LENGTH_SHORT).show()
         }else{
             navController.navigate(Navigation.LoginScreen.route)

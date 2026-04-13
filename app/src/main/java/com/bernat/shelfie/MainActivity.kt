@@ -1,6 +1,7 @@
 package com.bernat.shelfie
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,6 +19,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -29,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,6 +43,9 @@ import com.bernat.shelfie.authScreens.AccountViewModel
 import com.bernat.shelfie.authScreens.LoginLoadingScreen
 import com.bernat.shelfie.authScreens.LoginScreen
 import com.bernat.shelfie.authScreens.RegisterScreen
+import com.bernat.shelfie.booksScreen.AddBookScreen
+import com.bernat.shelfie.booksScreen.AddWithIsbnScreen
+import com.bernat.shelfie.booksScreen.HomeScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -50,6 +59,9 @@ sealed class Navigation(val route:String){
         object AddBookScreen: Navigation(route = "addBookScreen")
         object HomeScreen: Navigation(route = "homeScreen")
         object LoginLoadingScreen: Navigation(route = "loginLoadnigScreen")
+        object AddWithIsbnScreen: Navigation(route = "addWithIsbnScreen")
+
+
 }
 
 
@@ -76,7 +88,19 @@ class MainActivity : ComponentActivity() {
             ShelfieTheme {
                 Surface(Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
-                    NavController(navController,accountViewModel)
+
+
+
+
+
+                                BottomNavigation(
+                                    navController,
+                                    accountViewModel,
+                                    Navigation.StartScreen.route
+                                )
+
+
+
                 }
             }
         }
@@ -84,42 +108,83 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
 @Composable
-fun NavController(navController: NavHostController,accountViewModel: AccountViewModel){
+fun BottomNavigation(navController: NavHostController,accountViewModel: AccountViewModel,startDestination: String){
     Scaffold(
         bottomBar = {
             NavigationBar() {
-                NavigationBarItem(false,{navController.navigate(Navigation.StartScreen.route)}, icon = {Text("Profile")})
-                NavigationBarItem(false,{navController.navigate(Navigation.LoginScreen.route)}, icon = {Text("Login")})
+
+                    NavigationBarItem(
+                        false,
+                        { navController.navigate(Navigation.HomeScreen.route) },
+                        icon = { Text("Home") })
+                    NavigationBarItem(
+                        false,
+                        { navController.navigate(Navigation.AddBookScreen.route) },
+                        icon = { Text("Add Book") })
+                    NavigationBarItem(
+                        false,
+                        { navController.navigate(Navigation.LoginScreen.route) },
+                        icon = { Text("Profile") })
+
+
+
             }
         }
 
     ) { innerPading->
-        NavHost(navController, startDestination = Navigation.StartScreen.route, Modifier.padding(innerPading)) {
-            composable(Navigation.StartScreen.route) {
-                if (Firebase.auth.currentUser == null) {
-                    StartScreen(navController)
-                } else {
-                    ProfileScreen(navController, accountViewModel)
-                }
+        NavController(navController,accountViewModel, Modifier.padding(innerPading),startDestination)
+
+    }
+}
+@Composable
+fun NavController(navController: NavHostController,accountViewModel: AccountViewModel,modifier: Modifier,startDestination: String){
+
+    NavHost(navController, startDestination = startDestination,modifier=modifier) {
+        composable(Navigation.StartScreen.route) {
+            if (Firebase.auth.currentUser == null) {
+                StartScreen(navController)
+            } else {
+                ProfileScreen(navController, accountViewModel)
             }
-            composable(Navigation.LoginScreen.route) {
+        }
+        composable(Navigation.LoginScreen.route) {
+            if(Firebase.auth.currentUser == null) {
                 LoginScreen(
                     navController,
                     accountViewModel
                 )
+            }else{
+                ProfileScreen(navController,accountViewModel)
             }
-            composable(Navigation.RegiserScreen.route) {
-                RegisterScreen(
-                    navController,
-                    accountViewModel
-                )
-            }
-            composable(Navigation.LoginLoadingScreen.route) {
-                LoginLoadingScreen(navController)
-            }
+
         }
+        composable(Navigation.RegiserScreen.route) {
+            RegisterScreen(
+                navController,
+                accountViewModel
+            )
+        }
+        composable(Navigation.LoginLoadingScreen.route) {
+            LoginLoadingScreen(navController)
+        }
+        composable(Navigation.HomeScreen.route) {
+            if (Firebase.auth.currentUser == null) {
+            LoginScreen(navController,accountViewModel)
+            } else {
+            HomeScreen()
+            }
+            }
+        composable(Navigation.AddBookScreen.route) {
+            if (Firebase.auth.currentUser == null) {
+                LoginScreen(navController,accountViewModel)
+            } else {
+                AddBookScreen(navController)
+            }
+
+        }
+        composable(Navigation.AddWithIsbnScreen.route) { AddWithIsbnScreen() }
+
     }
 }
 
