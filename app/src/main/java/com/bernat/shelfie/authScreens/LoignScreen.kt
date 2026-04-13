@@ -1,4 +1,4 @@
-package com.bernat.shelfie
+package com.bernat.shelfie.authScreens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.navigation.NavController
+import com.bernat.shelfie.Navigation
 
 @Composable
 fun LoginScreen(navController: NavController,accountViewModel: AccountViewModel){

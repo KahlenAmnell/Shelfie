@@ -1,9 +1,8 @@
-package com.bernat.shelfie
+package com.bernat.shelfie.authScreens
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -18,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.navigation.NavController
+import com.bernat.shelfie.Navigation
 
 @Composable
 fun RegisterScreen(navController: NavController,accountViewModel: AccountViewModel) {
@@ -53,13 +53,24 @@ fun RegisterScreen(navController: NavController,accountViewModel: AccountViewMod
 
 
             Button({
-                if(passwordextFieldText == comfirmPsswordextFieldText){
-                    accountViewModel.onRegister(emailTextFieldText,passwordextFieldText)
-                    navController.navigate(Navigation.StartScreen.route)
-
-                }else{
+                if(passwordextFieldText != comfirmPsswordextFieldText ){
                     Toast.makeText(context,"Hasla sa rozne", Toast.LENGTH_SHORT).show()
                     clear()
+
+                }else if(passwordextFieldText =="" || emailTextFieldText == ""){
+                    Toast.makeText(context,"Prosze wprowadzić wszystkie wymagane dane", Toast.LENGTH_SHORT).show()
+                }else if(!(emailTextFieldText.contains("@")&& emailTextFieldText.contains("."))){
+                    Toast.makeText(context,"Prosze wprowadzić prawidłowy email", Toast.LENGTH_SHORT).show()
+                }else if(passwordextFieldText.length < 8){
+                    Toast.makeText(context,"Hasło musi miec co najmniej 8 znaków", Toast.LENGTH_SHORT).show()
+                }
+                else if(!(passwordextFieldText.contains(regex = Regex(pattern = "[A-Z]*")) && passwordextFieldText.contains(regex = Regex(pattern = "[0-9]*")))){
+                    Toast.makeText(context,"Hasło musi zawierać duże litery oraz cyfry", Toast.LENGTH_SHORT).show()
+                }
+                else{
+
+                    accountViewModel.onRegister(emailTextFieldText,passwordextFieldText)
+                    navController.navigate(Navigation.LoginScreen.route)
 
                 }
             }) {
