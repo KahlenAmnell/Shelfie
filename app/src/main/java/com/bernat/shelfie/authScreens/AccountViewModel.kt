@@ -10,11 +10,15 @@ class AccountViewModel: ViewModel() {
 
 
 
-    fun onLogin(email: String,password: String){
+    fun  onLogin(email: String,password: String) {
+
+
         viewModelScope.launch {
             Firebase.auth.signInWithEmailAndPassword(email, password)
         }
+
     }
+
     fun onRegister(email: String,password: String){
         viewModelScope.launch {
             Firebase.auth.createUserWithEmailAndPassword(email, password)

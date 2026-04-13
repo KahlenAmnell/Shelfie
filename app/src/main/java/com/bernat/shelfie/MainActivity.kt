@@ -34,6 +34,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.bernat.shelfie.authScreens.AccountViewModel
+import com.bernat.shelfie.authScreens.LoginLoadingScreen
 import com.bernat.shelfie.authScreens.LoginScreen
 import com.bernat.shelfie.authScreens.RegisterScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
@@ -47,7 +48,8 @@ sealed class Navigation(val route:String){
         object RegiserScreen: Navigation(route = "registerScreen")
 
         object AddBookScreen: Navigation(route = "addBookScreen")
-        object HomeScreen: Navigation(route = "HomeScreen")
+        object HomeScreen: Navigation(route = "homeScreen")
+        object LoginLoadingScreen: Navigation(route = "loginLoadnigScreen")
 }
 
 
@@ -113,6 +115,9 @@ fun NavController(navController: NavHostController,accountViewModel: AccountView
                     navController,
                     accountViewModel
                 )
+            }
+            composable(Navigation.LoginLoadingScreen.route) {
+                LoginLoadingScreen(navController)
             }
         }
     }
