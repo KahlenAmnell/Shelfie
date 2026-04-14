@@ -24,11 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bernat.shelfie.authScreens.AccountViewModel
+import com.bernat.shelfie.booksScreen.BooksDatabaseView
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 @Composable
-fun ProfileScreen(navController: NavController,accountViewModel: AccountViewModel){
+fun ProfileScreen(navController: NavController,accountViewModel: AccountViewModel,booksDatabaseView: BooksDatabaseView){
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         val imagePainter = painterResource(R.drawable.ic_launcher_foreground)
         var name: String? by remember { mutableStateOf("") }
@@ -51,6 +52,7 @@ fun ProfileScreen(navController: NavController,accountViewModel: AccountViewMode
 
                 )
                 Button({
+                    booksDatabaseView.onLogOut()
                     accountViewModel.onLogout()
                     navController.navigate(Navigation.StartScreen.route)
                 }) {

@@ -26,12 +26,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
 import com.bernat.shelfie.R
+import com.bernat.shelfie.booksScreen.BooksDatabaseView
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.delay
+import okhttp3.internal.wait
 
 @Composable
-fun LoginLoadingScreen(navController: NavController){
+fun LoginLoadingScreen(navController: NavController,booksDatabaseView: BooksDatabaseView){
     val context = LocalContext.current
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         val imagePainter = painterResource(R.drawable.ic_launcher_foreground)
@@ -56,17 +58,25 @@ fun LoginLoadingScreen(navController: NavController){
             }
         }
     }
+
+
     LaunchedEffect(Lifecycle.Event.ON_RESUME) {
 
-        delay(1000)
+
 
 
         if(Firebase.auth.currentUser!= null) {
-            navController.navigate(Navigation.HomeScreen.route)
+            booksDatabaseView.getRef()
+            booksDatabaseView.loadData()
+
             Toast.makeText(context,"Logowanie się powiodło", Toast.LENGTH_SHORT).show()
+            navController.navigate(Navigation.HomeScreen.route)
+
         }else{
             navController.navigate(Navigation.LoginScreen.route)
             Toast.makeText(context,"Logowanie się nie powiodło", Toast.LENGTH_SHORT).show()
         }
+
+        delay(2000)
     }
 }

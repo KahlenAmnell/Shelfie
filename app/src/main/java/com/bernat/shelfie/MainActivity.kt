@@ -45,6 +45,7 @@ import com.bernat.shelfie.authScreens.LoginScreen
 import com.bernat.shelfie.authScreens.RegisterScreen
 import com.bernat.shelfie.booksScreen.AddBookScreen
 import com.bernat.shelfie.booksScreen.AddWithIsbnScreen
+import com.bernat.shelfie.booksScreen.BooksDatabaseView
 import com.bernat.shelfie.booksScreen.HomeScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
@@ -80,6 +81,16 @@ class MainActivity : ComponentActivity() {
         }
     )
 
+    private val bookDatabaseViewModel by viewModels<BooksDatabaseView>(
+        factoryProducer = {
+            object : ViewModelProvider.Factory{
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return BooksDatabaseView() as T
+                }
+            }
+        }
+    )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +107,8 @@ class MainActivity : ComponentActivity() {
                                 BottomNavigation(
                                     navController,
                                     accountViewModel,
-                                    Navigation.StartScreen.route
+                                    Navigation.StartScreen.route,
+                                    bookDatabaseViewModel
                                 )
 
 
@@ -109,7 +121,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun BottomNavigation(navController: NavHostController,accountViewModel: AccountViewModel,startDestination: String){
+fun BottomNavigation(navController: NavHostController,accountViewModel: AccountViewModel,startDestination: String,booksDatabaseView: BooksDatabaseView){
     Scaffold(
         bottomBar = {
             NavigationBar() {
@@ -133,19 +145,19 @@ fun BottomNavigation(navController: NavHostController,accountViewModel: AccountV
         }
 
     ) { innerPading->
-        NavController(navController,accountViewModel, Modifier.padding(innerPading),startDestination)
+        NavController(navController,accountViewModel, Modifier.padding(innerPading),startDestination,booksDatabaseView)
 
     }
 }
 @Composable
-fun NavController(navController: NavHostController,accountViewModel: AccountViewModel,modifier: Modifier,startDestination: String){
+fun NavController(navController: NavHostController,accountViewModel: AccountViewModel,modifier: Modifier,startDestination: String,booksDatabaseView: BooksDatabaseView){
 
     NavHost(navController, startDestination = startDestination,modifier=modifier) {
         composable(Navigation.StartScreen.route) {
             if (Firebase.auth.currentUser == null) {
                 StartScreen(navController)
             } else {
-                ProfileScreen(navController, accountViewModel)
+               LoginLoadingScreen(navController,booksDatabaseView)
             }
         }
         composable(Navigation.LoginScreen.route) {
@@ -155,7 +167,7 @@ fun NavController(navController: NavHostController,accountViewModel: AccountView
                     accountViewModel
                 )
             }else{
-                ProfileScreen(navController,accountViewModel)
+                ProfileScreen(navController,accountViewModel,booksDatabaseView)
             }
 
         }
@@ -166,20 +178,20 @@ fun NavController(navController: NavHostController,accountViewModel: AccountView
             )
         }
         composable(Navigation.LoginLoadingScreen.route) {
-            LoginLoadingScreen(navController)
+            LoginLoadingScreen(navController,booksDatabaseView)
         }
         composable(Navigation.HomeScreen.route) {
             if (Firebase.auth.currentUser == null) {
             LoginScreen(navController,accountViewModel)
             } else {
-            HomeScreen()
+            HomeScreen(booksDatabaseView)
             }
             }
         composable(Navigation.AddBookScreen.route) {
             if (Firebase.auth.currentUser == null) {
                 LoginScreen(navController,accountViewModel)
             } else {
-                AddBookScreen(navController)
+                AddBookScreen(navController,booksDatabaseView)
             }
 
         }

@@ -20,13 +20,18 @@ import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
 
 @Composable
-fun AddBookScreen(navController: NavController){
+fun AddBookScreen(navController: NavController,booksDatabaseView: BooksDatabaseView){
     var titleText by remember { mutableStateOf("") }
     var authorText by remember { mutableStateOf("") }
     var yearText by remember { mutableStateOf("") }
     var pageCount by remember { mutableStateOf("") }
 
-
+    fun clear(){
+        titleText = ""
+        authorText = ""
+        yearText = ""
+        pageCount = ""
+    }
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Row() {
          TextField(titleText, { titleText = it }, label = { Text("title") })
@@ -41,7 +46,10 @@ fun AddBookScreen(navController: NavController){
             TextField(pageCount, { pageCount = it }, label = { Text("ilosc stron") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         }
         Row() {
-            Button({}) {
+            Button({
+                booksDatabaseView.onAddBook(titleText,authorText,pageCount.toInt(), yearText)
+                clear()
+            }) {
                 Text("add book")
             }
             Button({navController.navigate(Navigation.AddWithIsbnScreen.route)}) {
