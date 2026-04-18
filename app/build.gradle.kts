@@ -5,6 +5,9 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
 }
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 
 android {
     namespace = "com.bernat.shelfie"
@@ -36,9 +39,10 @@ android {
     buildFeatures {
         compose = true
     }
-    room {
-        schemaDirectory("$projectDir/schemas")
-    }
+
+
+
+
 }
 
 dependencies {
@@ -51,22 +55,24 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
-    # Retrofit
+    // Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
 
-    # Room
+     //Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 
-    # Navigation
+    // Navigation
     implementation(libs.androidx.navigation.compose)
 
-    # Firebase
+    // Firebase
     implementation(libs.firebase.auth)
+    implementation("com.google.firebase:firebase-analytics:23.2.0")
+    implementation("com.google.firebase:firebase-database:22.0.1")
 
-    # Maps
+    // Maps
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
 
