@@ -39,6 +39,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.bernat.shelfie.authScreens.AccountViewModel
 import com.bernat.shelfie.authScreens.LoginLoadingScreen
 import com.bernat.shelfie.authScreens.LoginScreen
@@ -52,21 +53,21 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
 
-sealed class Navigation(val route:String){
-        object StartScreen: Navigation(route = "startScreen")
-        object LoginScreen: Navigation(route = "loginScreen")
-        object RegiserScreen: Navigation(route = "registerScreen")
+sealed class Navigation(val route: String) {
+    object StartScreen : Navigation("startScreen")
+    object LoginScreen : Navigation("loginScreen")
+    object RegisterScreen : Navigation("registerScreen")
+    object HomeScreen : Navigation("homeScreen")
+    object LoginLoadingScreen : Navigation("loginLoadingScreen")
+    object AddWithIsbnScreen : Navigation("addWithIsbnScreen")
 
-        object AddBookScreen: Navigation(route = "addBookScreen")
-        object HomeScreen: Navigation(route = "homeScreen")
-        object LoginLoadingScreen: Navigation(route = "loginLoadnigScreen")
-        object AddWithIsbnScreen: Navigation(route = "addWithIsbnScreen")
-
-
+    // Trasa z opcjonalnymi argumentami
+    object AddBookScreen : Navigation("addBookScreen?isbn={isbn}&title={title}&author={author}&year={year}&pages={pages}") {
+        fun createRoute(isbn: String = "", title: String = "", author: String = "", year: String = "", pages: String = ""): String {
+            return "addBookScreen?isbn=$isbn&title=$title&author=$author&year=$year&pages=$pages"
+        }
+    }
 }
-
-
-
 
 
 class MainActivity : ComponentActivity() {
@@ -100,18 +101,12 @@ class MainActivity : ComponentActivity() {
                 Surface(Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
 
-
-
-
-
                                 BottomNavigation(
                                     navController,
                                     accountViewModel,
                                     Navigation.StartScreen.route,
                                     bookDatabaseViewModel
                                 )
-
-
 
                 }
             }
@@ -132,7 +127,7 @@ fun BottomNavigation(navController: NavHostController,accountViewModel: AccountV
                         icon = { Text("Home") })
                     NavigationBarItem(
                         false,
-                        { navController.navigate(Navigation.AddBookScreen.route) },
+                        { navController.navigate(Navigation.AddBookScreen.createRoute()) },
                         icon = { Text("Add Book") })
                     NavigationBarItem(
                         false,
@@ -150,10 +145,15 @@ fun BottomNavigation(navController: NavHostController,accountViewModel: AccountV
     }
 }
 @Composable
-fun NavController(navController: NavHostController,accountViewModel: AccountViewModel,modifier: Modifier,startDestination: String,booksDatabaseView: BooksDatabaseView){
-
-    NavHost(navController, startDestination = startDestination,modifier=modifier) {
-        composable(Navigation.StartScreen.route) {
+fun NavController(
+    navController: NavHostController,
+    accountViewModel: AccountViewModel,
+    modifier: Modifier,
+    startDestination: String,
+    booksDatabaseView: BooksDatabaseView
+) {
+    NavHost(navController, startDestination = startDestination, modifier = modifier) {
+    composable(Navigation.StartScreen.route) {
             if (Firebase.auth.currentUser == null) {
                 StartScreen(navController)
             } else {
@@ -171,11 +171,8 @@ fun NavController(navController: NavHostController,accountViewModel: AccountView
             }
 
         }
-        composable(Navigation.RegiserScreen.route) {
-            RegisterScreen(
-                navController,
-                accountViewModel
-            )
+        composable(Navigation.RegisterScreen.route) {
+            RegisterScreen(navController, accountViewModel)
         }
         composable(Navigation.LoginLoadingScreen.route) {
             LoginLoadingScreen(navController,booksDatabaseView)
@@ -187,15 +184,39 @@ fun NavController(navController: NavHostController,accountViewModel: AccountView
             HomeScreen(booksDatabaseView)
             }
             }
-        composable(Navigation.AddBookScreen.route) {
-            if (Firebase.auth.currentUser == null) {
-                LoginScreen(navController,accountViewModel)
-            } else {
-                AddBookScreen(navController,booksDatabaseView)
-            }
+        composable(
+            route = Navigation.AddBookScreen.route,
+            arguments = listOf(
+                navArgument("isbn") { defaultValue = "" },
+                navArgument("title") { defaultValue = "" },
+                navArgument("author") { defaultValue = "" },
+                navArgument("year") { defaultValue = "" },
+                navArgument("pages") { defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val isbn = backStackEntry.arguments?.getString("isbn") ?: ""
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            val author = backStackEntry.arguments?.getString("author") ?: ""
+            val year = backStackEntry.arguments?.getString("year") ?: ""
+            val pages = backStackEntry.arguments?.getString("pages") ?: ""
 
+            if (Firebase.auth.currentUser == null) {
+                LoginScreen(navController, accountViewModel)
+            } else {
+                AddBookScreen(
+                    navController = navController,
+                    booksDatabaseView = booksDatabaseView,
+                    initialIsbn = isbn,
+                    initialTitle = title,
+                    initialAuthor = author,
+                    initialYear = year,
+                    initialPages = pages
+                )
+            }
         }
-        composable(Navigation.AddWithIsbnScreen.route) { AddWithIsbnScreen() }
+        composable(Navigation.AddWithIsbnScreen.route) {
+            AddWithIsbnScreen(navController = navController)
+        }
 
     }
 }
