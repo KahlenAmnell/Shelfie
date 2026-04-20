@@ -1,5 +1,6 @@
 package com.bernat.shelfie.booksScreen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,22 +16,34 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
 
 @Composable
-fun AddBookScreen(navController: NavController,booksDatabaseView: BooksDatabaseView){
-    var titleText by remember { mutableStateOf("") }
-    var authorText by remember { mutableStateOf("") }
-    var yearText by remember { mutableStateOf("") }
-    var pageCount by remember { mutableStateOf("") }
+fun AddBookScreen(
+    navController: NavController,
+    booksDatabaseView: BooksDatabaseView,
+    initialIsbn: String = "",
+    initialTitle: String = "",
+    initialAuthor: String = "",
+    initialYear: String = "",
+    initialPages: String = ""
+) {
+    val context = LocalContext.current
+    var titleText by remember(initialTitle) { mutableStateOf(initialTitle) }
+    var authorText by remember(initialAuthor) { mutableStateOf(initialAuthor) }
+    var yearText by remember(initialYear) { mutableStateOf(initialYear) }
+    var pageCount by remember(initialPages) { mutableStateOf(initialPages) }
+    var isbnText by remember(initialIsbn) { mutableStateOf(initialIsbn) }
 
     fun clear(){
         titleText = ""
         authorText = ""
         yearText = ""
         pageCount = ""
+        isbnText = ""
     }
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Row() {
@@ -46,9 +59,18 @@ fun AddBookScreen(navController: NavController,booksDatabaseView: BooksDatabaseV
             TextField(pageCount, { pageCount = it }, label = { Text("ilosc stron") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         }
         Row() {
+            TextField(isbnText, { isbnText = it }, label = { Text("isbn") })
+        }
+        Row() {
             Button({
-                booksDatabaseView.onAddBook(titleText,authorText,pageCount.toInt(), yearText)
-                clear()
+                if (titleText.isNotBlank()) {
+                    val addedTitle = titleText
+                    booksDatabaseView.onAddBook(titleText, authorText, pageCount.toIntOrNull() ?: 0, yearText)
+                    Toast.makeText(context, "Dodano książkę: $addedTitle", Toast.LENGTH_SHORT).show()
+                    clear()
+                } else {
+                    Toast.makeText(context, "Nazwa książki jest obowiązkowa", Toast.LENGTH_SHORT).show()
+                }
             }) {
                 Text("add book")
             }
@@ -58,6 +80,4 @@ fun AddBookScreen(navController: NavController,booksDatabaseView: BooksDatabaseV
 
         }
     }
-
-
 }

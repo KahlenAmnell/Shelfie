@@ -49,7 +49,7 @@ fun LoginScreen(navController: NavController,accountViewModel: AccountViewModel)
             }) {
                 Text("Login")
             }
-            Button({navController.navigate(Navigation.RegiserScreen.route)}) {
+            Button({navController.navigate(Navigation.RegisterScreen.route)}) {
                 Text("Register")
             }
         }
