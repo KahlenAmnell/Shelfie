@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,14 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
 }
+
+// Ręczne czytanie local.properties
+val localProperties = Properties()
+val localPropertiesFile = project.rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 room {
     schemaDirectory("$projectDir/schemas")
 }
@@ -21,6 +31,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Pobieramy klucz i wstawiamy go do BuildConfig
+        val apiKey = localProperties.getProperty("GOOGLE_BOOKS_API_KEY") ?: ""
+        buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$apiKey\"")
     }
 
     buildTypes {
@@ -38,11 +52,8 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
-
-
-
-
 }
 
 dependencies {
@@ -54,38 +65,22 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-
-    // Retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
-
-     //Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
-
-    // Navigation
     implementation(libs.androidx.navigation.compose)
-
-    // Firebase
     implementation(libs.firebase.auth)
     implementation("com.google.firebase:firebase-analytics:23.2.0")
     implementation("com.google.firebase:firebase-database:22.0.1")
-
-    // Maps
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
-
-    // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
-
-    // CameraX (do obsługi aparatu)
     val camerax_version = "1.3.4"
     implementation("androidx.camera:camera-camera2:$camerax_version")
     implementation("androidx.camera:camera-lifecycle:$camerax_version")
     implementation("androidx.camera:camera-view:$camerax_version")
-
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

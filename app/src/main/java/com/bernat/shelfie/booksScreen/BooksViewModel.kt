@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bernat.shelfie.BuildConfig
 import com.bernat.shelfie.data.api.RetrofitClient
 import com.bernat.shelfie.data.model.BookItem
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ class BooksViewModel : ViewModel() {
         uiState = BookUiState.Loading
         viewModelScope.launch {
             try {
-                val apiKey = "AIzaSyAWZDnSqrR8tfjU7D2LWNvL74Ywjy5nTMM"
+                val apiKey = BuildConfig.GOOGLE_BOOKS_API_KEY
                 val response = RetrofitClient.googleBooksService.getBookByIsbn("isbn:$isbn", apiKey)
                 if (response.isSuccessful) {
                     val bookResponse = response.body()
