@@ -23,6 +23,8 @@ data class VolumeInfo(
     val description: String?,
     @SerializedName("pageCount")
     val pageCount: Int?,
+    @SerializedName("publishedDate")
+    val publishedDate: String?,
     @SerializedName("imageLinks")
     val imageLinks: ImageLinks?,
     @SerializedName("industryIdentifiers")

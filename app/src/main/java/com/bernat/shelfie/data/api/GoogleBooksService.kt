@@ -8,7 +8,8 @@ import retrofit2.http.Query
 interface GoogleBooksService {
     @GET("volumes")
     suspend fun getBookByIsbn(
-        @Query("q") isbn: String
+        @Query("q") isbn: String,
+        @Query("key") apiKey: String
     ): Response<BookResponse>
 
     companion object {
