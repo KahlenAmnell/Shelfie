@@ -46,6 +46,7 @@ import com.bernat.shelfie.authScreens.LoginScreen
 import com.bernat.shelfie.authScreens.RegisterScreen
 import com.bernat.shelfie.booksScreen.AddBookScreen
 import com.bernat.shelfie.booksScreen.AddWithIsbnScreen
+import com.bernat.shelfie.booksScreen.BookDetailsScreen
 import com.bernat.shelfie.booksScreen.BooksDatabaseView
 import com.bernat.shelfie.booksScreen.HomeScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
@@ -60,6 +61,8 @@ sealed class Navigation(val route: String) {
     object HomeScreen : Navigation("homeScreen")
     object LoginLoadingScreen : Navigation("loginLoadingScreen")
     object AddWithIsbnScreen : Navigation("addWithIsbnScreen")
+
+    object BookDetailsScreen : Navigation("bookDetailsScreen")
 
     // Trasa z opcjonalnymi argumentami
     object AddBookScreen : Navigation("addBookScreen?isbn={isbn}&title={title}&author={author}&year={year}&pages={pages}") {
@@ -181,7 +184,7 @@ fun NavController(
             if (Firebase.auth.currentUser == null) {
             LoginScreen(navController,accountViewModel)
             } else {
-            HomeScreen(booksDatabaseView)
+            HomeScreen(booksDatabaseView,navController)
             }
             }
         composable(
@@ -217,6 +220,7 @@ fun NavController(
         composable(Navigation.AddWithIsbnScreen.route) {
             AddWithIsbnScreen(navController = navController)
         }
+        composable(Navigation.BookDetailsScreen.route) { BookDetailsScreen(booksDatabaseView,navController) }
 
     }
 }
