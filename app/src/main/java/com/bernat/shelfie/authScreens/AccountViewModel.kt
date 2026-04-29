@@ -18,6 +18,7 @@ class AccountViewModel: ViewModel() {
         viewModelScope.launch {
             Firebase.auth.signInWithEmailAndPassword(email, password)
 
+
         }
 
     }

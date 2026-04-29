@@ -68,24 +68,24 @@ fun LoginLoadingScreen(navController: NavController,booksDatabaseView: BooksData
     LaunchedEffect(Lifecycle.Event.ON_RESUME) {
 
 
-        println(Firebase.auth.currentUser)
+        delay(2000)
 
         if(Firebase.auth.currentUser != null) {
 
             booksDatabaseView.getRef()
             booksDatabaseView.loadData()
-
+            delay(2000)
 
             Toast.makeText(context, "Logowanie się powiodło", Toast.LENGTH_SHORT).show()
             navController.navigate(Navigation.HomeScreen.route)
 
 
         }else{
-
+            delay(2000)
             navController.navigate(Navigation.LoginScreen.route)
             Toast.makeText(context,"Logowanie się nie powiodło", Toast.LENGTH_SHORT).show()
         }
-        delay(2000)
+
 
     }
 }
