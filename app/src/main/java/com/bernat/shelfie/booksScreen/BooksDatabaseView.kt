@@ -23,8 +23,7 @@ import kotlin.reflect.typeOf
 
 class BooksDatabaseView: ViewModel() {
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
+
 
     var listOfBooks = mutableStateListOf<Book>()
 
@@ -77,12 +76,11 @@ class BooksDatabaseView: ViewModel() {
     }
 
         fun  loadData(){
-            println("Loading data ...")
             viewModelScope.launch {
-                _isLoading.value = true
+
                 databaseRef?.addValueEventListener(bookDatabaseListner)
 
-                _isLoading.value = false
+
             }
 
         }

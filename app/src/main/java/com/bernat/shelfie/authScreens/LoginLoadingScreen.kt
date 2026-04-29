@@ -37,9 +37,9 @@ import kotlinx.coroutines.delay
 import okhttp3.internal.wait
 
 @Composable
-fun LoginLoadingScreen(navController: NavController,booksDatabaseView: BooksDatabaseView){
+fun LoginLoadingScreen(navController: NavController,booksDatabaseView: BooksDatabaseView,accountViewModel: AccountViewModel){
     val context = LocalContext.current
-    val isLoading by booksDatabaseView.isLoading.collectAsStateWithLifecycle()
+
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         val imagePainter = painterResource(R.drawable.ic_launcher_foreground)
         Box(
@@ -68,24 +68,24 @@ fun LoginLoadingScreen(navController: NavController,booksDatabaseView: BooksData
     LaunchedEffect(Lifecycle.Event.ON_RESUME) {
 
 
+        println(Firebase.auth.currentUser)
 
-
-        if(Firebase.auth.currentUser!= null) {
+        if(Firebase.auth.currentUser != null) {
 
             booksDatabaseView.getRef()
             booksDatabaseView.loadData()
 
-            delay(2000)
+
             Toast.makeText(context, "Logowanie się powiodło", Toast.LENGTH_SHORT).show()
             navController.navigate(Navigation.HomeScreen.route)
 
 
         }else{
-            delay(2000)
+
             navController.navigate(Navigation.LoginScreen.route)
             Toast.makeText(context,"Logowanie się nie powiodło", Toast.LENGTH_SHORT).show()
         }
-
+        delay(2000)
 
     }
 }
