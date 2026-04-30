@@ -41,6 +41,8 @@ import com.bernat.shelfie.ui.screens.ProfileScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 sealed class Navigation(val route: String) {
@@ -55,9 +57,10 @@ sealed class Navigation(val route: String) {
     object ProfileScreen : Navigation("profileScreen")
 
     // Trasa z opcjonalnymi argumentami
-    object AddBookScreen : Navigation("addBookScreen?isbn={isbn}&title={title}&author={author}&year={year}&pages={pages}") {
-        fun createRoute(isbn: String = "", title: String = "", author: String = "", year: String = "", pages: String = ""): String {
-            return "addBookScreen?isbn=$isbn&title=$title&author=$author&year=$year&pages=$pages"
+    object AddBookScreen : Navigation("addBookScreen?isbn={isbn}&title={title}&author={author}&year={year}&pages={pages}&imageUrl={imageUrl}") {
+        fun createRoute(isbn: String = "", title: String = "", author: String = "", year: String = "", pages: String = "", imageUrl: String = ""): String {
+            val encodedUrl = URLEncoder.encode(imageUrl, StandardCharsets.UTF_8.toString())
+            return "addBookScreen?isbn=$isbn&title=$title&author=$author&year=$year&pages=$pages&imageUrl=$encodedUrl"
         }
     }
 }
@@ -123,7 +126,7 @@ fun BottomNavigation(navController: NavHostController, accountViewModel: Account
     Scaffold(
         bottomBar = {
             if (currentRoute !in screensWithoutBottomBar) {
-                NavigationBar() {
+                NavigationBar {
                     NavigationBarItem(
                         selected = currentRoute == Navigation.HomeScreen.route,
                         onClick = { navController.navigate(Navigation.HomeScreen.route) },
@@ -202,7 +205,8 @@ fun NavController(
                 navArgument("title") { defaultValue = "" },
                 navArgument("author") { defaultValue = "" },
                 navArgument("year") { defaultValue = "" },
-                navArgument("pages") { defaultValue = "" }
+                navArgument("pages") { defaultValue = "" },
+                navArgument("imageUrl") { defaultValue = "" }
             )
         ) { backStackEntry ->
             val isbn = backStackEntry.arguments?.getString("isbn") ?: ""
@@ -210,6 +214,7 @@ fun NavController(
             val author = backStackEntry.arguments?.getString("author") ?: ""
             val year = backStackEntry.arguments?.getString("year") ?: ""
             val pages = backStackEntry.arguments?.getString("pages") ?: ""
+            val imageUrl = backStackEntry.arguments?.getString("imageUrl") ?: ""
 
             if (Firebase.auth.currentUser == null) {
                 LaunchedEffect(Unit) {
@@ -225,7 +230,8 @@ fun NavController(
                     initialTitle = title,
                     initialAuthor = author,
                     initialYear = year,
-                    initialPages = pages
+                    initialPages = pages,
+                    initialImageUrl = imageUrl
                 )
             }
         }

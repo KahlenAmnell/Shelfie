@@ -5,5 +5,6 @@ data class Book (
     var title: String,
     var author: String,
     var pageCount: Int,
-    var publishDate: String
+    var publishDate: String,
+    var imageUrl: String? = null
 )

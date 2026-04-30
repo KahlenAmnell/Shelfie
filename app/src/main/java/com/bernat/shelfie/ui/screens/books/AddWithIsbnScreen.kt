@@ -42,6 +42,9 @@ fun AddWithIsbnScreen(
                 val fetchedIsbn = isbnText
                 val fetchedYear = info.publishedDate?.take(4) ?: ""
                 val fetchedPages = info.pageCount?.toString() ?: ""
+                
+                // Google Books API często zwraca http, zamieniamy na https dla stabilności
+                val fetchedImageUrl = info.imageLinks?.thumbnail?.replace("http://", "https://") ?: ""
 
                 navController.navigate(
                     Navigation.AddBookScreen.createRoute(
@@ -49,7 +52,8 @@ fun AddWithIsbnScreen(
                         title = fetchedTitle,
                         author = fetchedAuthor,
                         year = fetchedYear,
-                        pages = fetchedPages
+                        pages = fetchedPages,
+                        imageUrl = fetchedImageUrl
                     )
                 ) {
                     popUpTo(Navigation.AddWithIsbnScreen.route) { inclusive = true }

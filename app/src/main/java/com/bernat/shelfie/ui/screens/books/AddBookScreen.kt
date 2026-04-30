@@ -24,7 +24,8 @@ fun AddBookScreen(
     initialTitle: String = "",
     initialAuthor: String = "",
     initialYear: String = "",
-    initialPages: String = ""
+    initialPages: String = "",
+    initialImageUrl: String = ""
 ) {
     val context = LocalContext.current
     var titleText by remember(initialTitle) { mutableStateOf(initialTitle) }
@@ -32,6 +33,7 @@ fun AddBookScreen(
     var yearText by remember(initialYear) { mutableStateOf(initialYear) }
     var pageCount by remember(initialPages) { mutableStateOf(initialPages) }
     var isbnText by remember(initialIsbn) { mutableStateOf(initialIsbn) }
+    var imageUrlText by remember(initialImageUrl) { mutableStateOf(initialImageUrl) }
 
     fun clear(){
         titleText = ""
@@ -39,6 +41,7 @@ fun AddBookScreen(
         yearText = ""
         pageCount = ""
         isbnText = ""
+        imageUrlText = ""
     }
 
     Column(
@@ -87,7 +90,13 @@ fun AddBookScreen(
             Button(onClick = {
                 if (titleText.isNotBlank()) {
                     val addedTitle = titleText
-                    booksDatabaseView.onAddBook(titleText, authorText, pageCount.toIntOrNull() ?: 0, yearText)
+                    booksDatabaseView.onAddBook(
+                        titleText, 
+                        authorText, 
+                        pageCount.toIntOrNull() ?: 0, 
+                        yearText,
+                        imageUrlText.ifBlank { null }
+                    )
                     Toast.makeText(context, "Dodano książkę: $addedTitle", Toast.LENGTH_SHORT).show()
                     clear()
                     navController.navigate(Navigation.HomeScreen.route) {

@@ -38,9 +38,10 @@ class BooksDatabaseView: ViewModel() {
                 val author = ds.child("author").getValue<String>()
                 val pageCount = ds.child("pageCount").getValue<Int>()
                 val publishDate = ds.child("publishDate").getValue<String>()
+                val imageUrl = ds.child("imageUrl").getValue<String>()
 
                 if (title != null && author != null && pageCount != null && publishDate != null) {
-                    listOfBooks.add(Book(id, title, author, pageCount, publishDate))
+                    listOfBooks.add(Book(id, title, author, pageCount, publishDate, imageUrl))
                 }
             }
         }
@@ -56,8 +57,8 @@ class BooksDatabaseView: ViewModel() {
         }
     }
 
-    fun onAddBook(title: String, author: String, pageCount: Int, publishDate: String){
-        val book = Book(title = title, author = author, pageCount = pageCount, publishDate = publishDate)
+    fun onAddBook(title: String, author: String, pageCount: Int, publishDate: String, imageUrl: String? = null){
+        val book = Book(title = title, author = author, pageCount = pageCount, publishDate = publishDate, imageUrl = imageUrl)
         val key = databaseRef?.push()?.key
         databaseRef?.child(key!!)?.setValue(book)
     }
