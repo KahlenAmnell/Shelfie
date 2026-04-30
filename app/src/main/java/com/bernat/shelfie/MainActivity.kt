@@ -38,6 +38,7 @@ import com.bernat.shelfie.ui.screens.books.AddWithIsbnScreen
 import com.bernat.shelfie.ui.screens.books.BookDetailsScreen
 import com.bernat.shelfie.ui.screens.books.HomeScreen
 import com.bernat.shelfie.ui.screens.ProfileScreen
+import com.bernat.shelfie.ui.screens.books.EditBookScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -55,6 +56,7 @@ sealed class Navigation(val route: String) {
 
     object BookDetailsScreen : Navigation("bookDetailsScreen")
     object ProfileScreen : Navigation("profileScreen")
+    object EditBookScreen : Navigation("editBookScreen")
 
     // Trasa z opcjonalnymi argumentami
     object AddBookScreen : Navigation("addBookScreen?isbn={isbn}&title={title}&author={author}&year={year}&pages={pages}&imageUrl={imageUrl}") {
@@ -180,6 +182,9 @@ fun NavController(
         }
         composable(Navigation.RegisterScreen.route) {
             RegisterScreen(navController, accountViewModel)
+        }
+        composable(Navigation.EditBookScreen.route) {
+            EditBookScreen(navController,booksDatabaseView)
         }
         composable(Navigation.LoginLoadingScreen.route) {
             LoginLoadingScreen(navController, booksDatabaseView, accountViewModel)

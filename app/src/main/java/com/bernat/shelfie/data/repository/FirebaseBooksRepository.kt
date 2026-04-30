@@ -78,6 +78,9 @@ class FirebaseBooksRepository : BooksDatabaseRepository {
         }
     }
 
+    override fun onUpadteBook(bookId: String, updatedBook: Book) {
+        databaseRef?.child(bookId)?.setValue(updatedBook)
+    }
     override fun updateBookStatus(bookId: String, status: ReadingStatus) {
         databaseRef?.child(bookId)?.child("status")?.setValue(status.name)
     }
