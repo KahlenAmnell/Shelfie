@@ -6,18 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,15 +28,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.bernat.shelfie.authScreens.AccountViewModel
-import com.bernat.shelfie.authScreens.LoginLoadingScreen
-import com.bernat.shelfie.authScreens.LoginScreen
-import com.bernat.shelfie.authScreens.RegisterScreen
-import com.bernat.shelfie.booksScreen.AddBookScreen
-import com.bernat.shelfie.booksScreen.AddWithIsbnScreen
-import com.bernat.shelfie.booksScreen.BookDetailsScreen
-import com.bernat.shelfie.booksScreen.BooksDatabaseView
-import com.bernat.shelfie.booksScreen.HomeScreen
+import com.bernat.shelfie.ui.viewmodel.AccountViewModel
+import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
+import com.bernat.shelfie.ui.screens.auth.LoginLoadingScreen
+import com.bernat.shelfie.ui.screens.auth.LoginScreen
+import com.bernat.shelfie.ui.screens.auth.RegisterScreen
+import com.bernat.shelfie.ui.screens.books.AddBookScreen
+import com.bernat.shelfie.ui.screens.books.AddWithIsbnScreen
+import com.bernat.shelfie.ui.screens.books.BookDetailsScreen
+import com.bernat.shelfie.ui.screens.books.HomeScreen
 import com.bernat.shelfie.ui.screens.ProfileScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
@@ -102,13 +94,12 @@ class MainActivity : ComponentActivity() {
                 Surface(Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
 
-                                BottomNavigation(
-                                    navController,
-                                    accountViewModel,
-                                    Navigation.StartScreen.route,
-                                    bookDatabaseViewModel
-                                )
-
+                    BottomNavigation(
+                        navController,
+                        accountViewModel,
+                        Navigation.StartScreen.route,
+                        bookDatabaseViewModel
+                    )
                 }
             }
         }
@@ -117,7 +108,7 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun BottomNavigation(navController: NavHostController,accountViewModel: AccountViewModel,startDestination: String,booksDatabaseView: BooksDatabaseView){
+fun BottomNavigation(navController: NavHostController, accountViewModel: AccountViewModel, startDestination: String, booksDatabaseView: BooksDatabaseView){
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -134,12 +125,12 @@ fun BottomNavigation(navController: NavHostController,accountViewModel: AccountV
             if (currentRoute !in screensWithoutBottomBar) {
                 NavigationBar() {
                     NavigationBarItem(
-                        currentRoute == Navigation.HomeScreen.route,
-                        { navController.navigate(Navigation.HomeScreen.route) },
+                        selected = currentRoute == Navigation.HomeScreen.route,
+                        onClick = { navController.navigate(Navigation.HomeScreen.route) },
                         icon = { Text("Home") })
                     NavigationBarItem(
-                        currentRoute?.startsWith("addBookScreen") == true,
-                        { navController.navigate(Navigation.AddBookScreen.createRoute()) },
+                        selected = currentRoute?.startsWith("addBookScreen") == true,
+                        onClick = { navController.navigate(Navigation.AddBookScreen.createRoute()) },
                         icon = { Text("Add Book") })
                     NavigationBarItem(
                         selected = currentRoute == Navigation.ProfileScreen.route,
@@ -149,12 +140,11 @@ fun BottomNavigation(navController: NavHostController,accountViewModel: AccountV
                 }
             }
         }
-
-    ) { innerPading->
-        NavController(navController,accountViewModel, Modifier.padding(innerPading),startDestination,booksDatabaseView)
-
+    ) { innerPadding ->
+        NavController(navController, accountViewModel, Modifier.padding(innerPadding), startDestination, booksDatabaseView)
     }
 }
+
 @Composable
 fun NavController(
     navController: NavHostController,
@@ -164,11 +154,14 @@ fun NavController(
     booksDatabaseView: BooksDatabaseView
 ) {
     NavHost(navController, startDestination = startDestination, modifier = modifier) {
-    composable(Navigation.StartScreen.route) {
-            if (Firebase.auth.currentUser == null) {
-                StartScreen(navController)
-            } else {
-               LoginLoadingScreen(navController,booksDatabaseView)
+        composable(Navigation.StartScreen.route) {
+            StartScreen(navController)
+            LaunchedEffect(Unit) {
+                if (Firebase.auth.currentUser != null) {
+                    navController.navigate(Navigation.LoginLoadingScreen.route) {
+                        popUpTo(Navigation.StartScreen.route) { inclusive = true }
+                    }
+                }
             }
         }
         composable(Navigation.LoginScreen.route) {
@@ -176,7 +169,11 @@ fun NavController(
         }
         composable(Navigation.ProfileScreen.route) {
             if (Firebase.auth.currentUser == null) {
-                navController.navigate(Navigation.LoginScreen.route)
+                LaunchedEffect(Unit) {
+                    navController.navigate(Navigation.LoginScreen.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             } else {
                 ProfileScreen(navController, accountViewModel, booksDatabaseView)
             }
@@ -185,15 +182,19 @@ fun NavController(
             RegisterScreen(navController, accountViewModel)
         }
         composable(Navigation.LoginLoadingScreen.route) {
-            LoginLoadingScreen(navController,booksDatabaseView)
+            LoginLoadingScreen(navController, booksDatabaseView)
         }
         composable(Navigation.HomeScreen.route) {
             if (Firebase.auth.currentUser == null) {
-            LoginScreen(navController,accountViewModel)
+                LaunchedEffect(Unit) {
+                    navController.navigate(Navigation.LoginScreen.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             } else {
-            HomeScreen(booksDatabaseView,navController)
+                HomeScreen(booksDatabaseView, navController)
             }
-            }
+        }
         composable(
             route = Navigation.AddBookScreen.route,
             arguments = listOf(
@@ -211,7 +212,11 @@ fun NavController(
             val pages = backStackEntry.arguments?.getString("pages") ?: ""
 
             if (Firebase.auth.currentUser == null) {
-                LoginScreen(navController, accountViewModel)
+                LaunchedEffect(Unit) {
+                    navController.navigate(Navigation.LoginScreen.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             } else {
                 AddBookScreen(
                     navController = navController,
@@ -227,8 +232,9 @@ fun NavController(
         composable(Navigation.AddWithIsbnScreen.route) {
             AddWithIsbnScreen(navController = navController)
         }
-        composable(Navigation.BookDetailsScreen.route) { BookDetailsScreen(booksDatabaseView,navController) }
-
+        composable(Navigation.BookDetailsScreen.route) { 
+            BookDetailsScreen(booksDatabaseView, navController) 
+        }
     }
 }
 
@@ -244,7 +250,7 @@ fun StartScreen(navController: NavController){
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(imagePainter,null, Modifier.size(240.dp))
+                Image(imagePainter, null, Modifier.size(240.dp))
                 Text(
                     text = "It's me, Shelfie!",
                     style = TextStyle(
@@ -252,9 +258,8 @@ fun StartScreen(navController: NavController){
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp
                     )
-
                 )
-                Button({navController.navigate(Navigation.LoginScreen.route)}) {
+                Button(onClick = { navController.navigate(Navigation.LoginScreen.route) }) {
                     Text(
                         text = "Login",
                         style = TextStyle(
@@ -262,10 +267,8 @@ fun StartScreen(navController: NavController){
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp
                         )
-
                     )
                 }
-
             }
         }
     }
