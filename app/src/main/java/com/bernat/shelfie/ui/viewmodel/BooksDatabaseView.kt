@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bernat.shelfie.domain.model.Book
+import com.bernat.shelfie.domain.model.ReadingStatus
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.database.DataSnapshot
@@ -39,9 +40,16 @@ class BooksDatabaseView: ViewModel() {
                 val pageCount = ds.child("pageCount").getValue<Int>()
                 val publishDate = ds.child("publishDate").getValue<String>()
                 val imageUrl = ds.child("imageUrl").getValue<String>()
+                val statusString = ds.child("status").getValue<String>()
+                
+                val status = try {
+                    if (statusString != null) ReadingStatus.valueOf(statusString) else ReadingStatus.WANT_TO_READ
+                } catch (e: Exception) {
+                    ReadingStatus.WANT_TO_READ
+                }
 
                 if (title != null && author != null && pageCount != null && publishDate != null) {
-                    listOfBooks.add(Book(id, title, author, pageCount, publishDate, imageUrl))
+                    listOfBooks.add(Book(id, title, author, pageCount, publishDate, imageUrl, status))
                 }
             }
         }
@@ -57,10 +65,20 @@ class BooksDatabaseView: ViewModel() {
         }
     }
 
-    fun onAddBook(title: String, author: String, pageCount: Int, publishDate: String, imageUrl: String? = null){
-        val book = Book(title = title, author = author, pageCount = pageCount, publishDate = publishDate, imageUrl = imageUrl)
+    fun onAddBook(title: String, author: String, pageCount: Int, publishDate: String, imageUrl: String? = null, status: ReadingStatus = ReadingStatus.WANT_TO_READ){
+        val book = Book(title = title, author = author, pageCount = pageCount, publishDate = publishDate, imageUrl = imageUrl, status = status)
         val key = databaseRef?.push()?.key
         databaseRef?.child(key!!)?.setValue(book)
+    }
+
+    fun onUpdateStatus(bookId: String, newStatus: ReadingStatus) {
+        databaseRef?.child(bookId)?.child("status")?.setValue(newStatus.name)
+    }
+
+    fun onDeleteBook(book: Book) {
+        book.id?.let { id ->
+            databaseRef?.child(id)?.removeValue()
+        }
     }
 
     fun onLogOut(){

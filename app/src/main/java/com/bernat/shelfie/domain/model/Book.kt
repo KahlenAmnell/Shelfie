@@ -6,5 +6,6 @@ data class Book (
     var author: String,
     var pageCount: Int,
     var publishDate: String,
-    var imageUrl: String? = null
+    var imageUrl: String? = null,
+    var status: ReadingStatus = ReadingStatus.WANT_TO_READ
 )
