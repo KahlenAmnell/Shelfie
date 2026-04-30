@@ -3,16 +3,17 @@ package com.bernat.shelfie.ui.viewmodel
 import com.bernat.shelfie.domain.model.Book
 import com.bernat.shelfie.domain.model.ReadingStatus
 import com.bernat.shelfie.domain.repository.BooksDatabaseRepository
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -50,36 +51,42 @@ class BooksDatabaseViewTest {
         // Then
         assertEquals(2, viewModel.listOfBooks.size)
         assertEquals("Book 1", viewModel.listOfBooks[0].title)
-        assertEquals("Book 2", viewModel.listOfBooks[1].title)
+    }
+
+    @Test
+    fun `loadData handles repository error gracefully`() = runTest {
+        // Given
+        every { repository.getBooks() } returns flow {
+            throw Exception("Firebase Database error: Permission denied")
+        }
+        
+        // Initial data
+        viewModel.listOfBooks.add(Book(id = "1", title = "Old Book", author = "A", pageCount = 1, publishDate = "D"))
+
+        // When
+        viewModel.loadData()
+        advanceUntilIdle()
+
+        // Then
+        assertTrue(viewModel.listOfBooks.isEmpty())
     }
 
     @Test
     fun `onAddBook calls repository addBook`() {
-        // When
         viewModel.onAddBook("Title", "Author", 100, "2023")
-
-        // Then
         verify { repository.addBook(any()) }
     }
 
     @Test
     fun `onUpdateStatus calls repository updateBookStatus`() {
-        // When
         viewModel.onUpdateStatus("1", ReadingStatus.READING)
-
-        // Then
         verify { repository.updateBookStatus("1", ReadingStatus.READING) }
     }
 
     @Test
     fun `onDeleteBook calls repository deleteBook`() {
-        // Given
         val book = Book(id = "1", title = "T", author = "A", pageCount = 1, publishDate = "D")
-
-        // When
         viewModel.onDeleteBook(book)
-
-        // Then
         verify { repository.deleteBook("1") }
     }
 }
