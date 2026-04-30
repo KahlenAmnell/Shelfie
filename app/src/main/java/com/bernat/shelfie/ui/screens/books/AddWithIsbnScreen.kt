@@ -1,4 +1,4 @@
-package com.bernat.shelfie.booksScreen
+package com.bernat.shelfie.ui.screens.books
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -6,23 +6,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,6 +18,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
 import com.bernat.shelfie.ui.scanner.CameraPreview
+import com.bernat.shelfie.ui.viewmodel.BookUiState
+import com.bernat.shelfie.ui.viewmodel.BooksViewModel
 
 @Composable
 fun AddWithIsbnScreen(
@@ -54,6 +42,9 @@ fun AddWithIsbnScreen(
                 val fetchedIsbn = isbnText
                 val fetchedYear = info.publishedDate?.take(4) ?: ""
                 val fetchedPages = info.pageCount?.toString() ?: ""
+                
+                // Google Books API często zwraca http, zamieniamy na https dla stabilności
+                val fetchedImageUrl = info.imageLinks?.thumbnail?.replace("http://", "https://") ?: ""
 
                 navController.navigate(
                     Navigation.AddBookScreen.createRoute(
@@ -61,7 +52,8 @@ fun AddWithIsbnScreen(
                         title = fetchedTitle,
                         author = fetchedAuthor,
                         year = fetchedYear,
-                        pages = fetchedPages
+                        pages = fetchedPages,
+                        imageUrl = fetchedImageUrl
                     )
                 ) {
                     popUpTo(Navigation.AddWithIsbnScreen.route) { inclusive = true }
@@ -105,7 +97,7 @@ fun AddWithIsbnScreen(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 32.dp)
             ) {
-                Text("Cancel")
+                Text("Anuluj")
             }
         }
     } else {
@@ -149,7 +141,7 @@ fun AddWithIsbnScreen(
                     },
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Text("Scan ISBN")
+                    Text("Skanuj ISBN")
                 }
             }
         }
