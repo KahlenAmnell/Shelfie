@@ -158,13 +158,10 @@ fun NavController(
 ) {
     NavHost(navController, startDestination = startDestination, modifier = modifier) {
         composable(Navigation.StartScreen.route) {
-            StartScreen(navController)
-            LaunchedEffect(Unit) {
-                if (Firebase.auth.currentUser != null) {
-                    navController.navigate(Navigation.LoginLoadingScreen.route) {
-                        popUpTo(Navigation.StartScreen.route) { inclusive = true }
-                    }
-                }
+            if (Firebase.auth.currentUser == null) {
+                StartScreen(navController)
+            } else {
+                LoginLoadingScreen(navController, booksDatabaseView, accountViewModel)
             }
         }
         composable(Navigation.LoginScreen.route) {
@@ -185,7 +182,7 @@ fun NavController(
             RegisterScreen(navController, accountViewModel)
         }
         composable(Navigation.LoginLoadingScreen.route) {
-            LoginLoadingScreen(navController, booksDatabaseView)
+            LoginLoadingScreen(navController, booksDatabaseView, accountViewModel)
         }
         composable(Navigation.HomeScreen.route) {
             if (Firebase.auth.currentUser == null) {

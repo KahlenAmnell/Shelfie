@@ -15,13 +15,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
 import com.bernat.shelfie.R
+import com.bernat.shelfie.ui.viewmodel.AccountViewModel
 import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.delay
 
 @Composable
-fun LoginLoadingScreen(navController: NavController, booksDatabaseView: BooksDatabaseView) {
+fun LoginLoadingScreen(
+    navController: NavController,
+    booksDatabaseView: BooksDatabaseView,
+    accountViewModel: AccountViewModel // Dodany parametr z main
+) {
     
     var startAnimation by remember { mutableStateOf(false) }
     
