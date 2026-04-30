@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "677096685099",
+    "firebase_url": "https://poleczka-2e694-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "poleczka-2e694",
+    "storage_bucket": "poleczka-2e694.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677096685099:android:4c7ab0772a753aea4bb46e",
+        "android_client_info": {
+          "package_name": "com.bernat.shelfie"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "677096685099-8ti08j8geb1u3ojrmlgfd2lg174leppt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bernat.shelfie",
+            "certificate_hash": "80051e03c2b165305e55bf8b8bd0ce18205348d2"
+          }
+        },
+        {
+          "client_id": "677096685099-45jacj9ervtjqhtd6q46n35elovvf2gi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNKFYl8z6B0U7e_N-IDD1TXXGsgKy7hfQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "677096685099-45jacj9ervtjqhtd6q46n35elovvf2gi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
