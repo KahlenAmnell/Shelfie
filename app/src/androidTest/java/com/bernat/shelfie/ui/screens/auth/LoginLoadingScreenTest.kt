@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
+import com.bernat.shelfie.ui.viewmodel.AccountViewModel
 import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
 import io.mockk.mockk
 import org.junit.Rule
@@ -19,12 +20,15 @@ class LoginLoadingScreenTest {
         // Given
         val mockNavController = mockk<NavController>(relaxed = true)
         val mockViewModel = mockk<BooksDatabaseView>(relaxed = true)
+        val mockAccountViewModel = mockk<AccountViewModel>(relaxed = true)
+
 
         // When
         composeTestRule.setContent {
             LoginLoadingScreen(
-                navController = mockNavController,
-                booksDatabaseView = mockViewModel
+                mockNavController,
+                mockViewModel,
+                mockAccountViewModel
             )
         }
 
