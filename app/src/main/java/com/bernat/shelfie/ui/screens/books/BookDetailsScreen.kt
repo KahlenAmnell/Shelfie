@@ -1,11 +1,16 @@
 package com.bernat.shelfie.ui.screens.books
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -19,11 +24,14 @@ import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
 fun BookDetailsScreen(booksDatabaseView: BooksDatabaseView, navController: NavController) {
     val book = booksDatabaseView.currentBook
     var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (book != null) {
@@ -92,8 +100,30 @@ fun BookDetailsScreen(booksDatabaseView: BooksDatabaseView, navController: NavCo
                     style = MaterialTheme.typography.bodyLarge
                 )
 
-                Button({navController.navigate(Navigation.EditBookScreen.route)}) {
-                    Text("Edytuj książkę")
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { navController.navigate(Navigation.EditBookScreen.route) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Edytuj")
+                    }
+
+                    // Punkt 2: Implicit Intent - Otwieranie wyszukiwarki Google
+                    OutlinedButton(
+                        onClick = {
+                            val query = "kup książkę ${book.title} ${book.author}"
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=${Uri.encode(query)}"))
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Kup książkę")
+                    }
                 }
             }
         } else {

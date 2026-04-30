@@ -10,6 +10,6 @@ interface BooksDatabaseRepository {
     fun updateBookStatus(bookId: String, status: ReadingStatus)
     fun deleteBook(bookId: String)
 
-    fun onUpadteBook(bookId: String, updatedBook:Book)
+    fun onUpdateBook(bookId: String, updatedBook: Book)
     fun refreshUser()
 }

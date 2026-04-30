@@ -2,14 +2,14 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    // Usunięto alias(libs.plugins.kotlin.android), aby naprawić błąd "extension already registered"
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    alias(libs.plugins.secrets)
 }
 
-// Ręczne czytanie local.properties
+// Ręczne czytanie local.properties (opcjonalnie, plugin secrets powinien to obsłużyć)
 val localProperties = Properties()
 val localPropertiesFile = project.rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -33,9 +33,12 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Pobieramy klucz i wstawiamy go do BuildConfig
+        // Zapewnienie, że klucz jest dostępny w BuildConfig
         val apiKey = localProperties.getProperty("GOOGLE_BOOKS_API_KEY") ?: ""
         buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$apiKey\"")
+        
+        // Zapewnienie, że placeholder w manifeście jest wypełniony
+        manifestPlaceholders["GOOGLE_BOOKS_API_KEY"] = apiKey.ifEmpty { "unused_key" }
     }
 
     buildTypes {
@@ -61,6 +64,11 @@ android {
             excludes += "/META-INF/LICENSE-notice.md"
         }
     }
+}
+
+secrets {
+    // Opcjonalnie skonfiguruj plugin secrets
+    defaultPropertiesFileName = "secrets.defaults.properties"
 }
 
 dependencies {

@@ -112,7 +112,7 @@ fun EditBookScreen(
                 }
             } }
             }
-            newBook?.let { bookToEdit?.id?.let { bookId -> booksDatabaseView.onUpadteBook(bookId,it) } }
+            newBook?.let { bookToEdit?.id?.let { bookId -> booksDatabaseView.onUpdateBook(bookId,it) } }
             navController.navigate(Navigation.HomeScreen.route)
         }) {
             Text("Edytuj książkę")

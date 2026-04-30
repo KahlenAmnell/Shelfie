@@ -1,5 +1,6 @@
 package com.bernat.shelfie.data.repository
 
+import android.util.Log
 import com.bernat.shelfie.domain.model.Book
 import com.bernat.shelfie.domain.model.ReadingStatus
 import com.bernat.shelfie.domain.repository.BooksDatabaseRepository
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.callbackFlow
 class FirebaseBooksRepository : BooksDatabaseRepository {
 
     private var databaseRef: DatabaseReference? = null
+    private val databaseUrl = "https://poleczka-2e694-default-rtdb.europe-west1.firebasedatabase.app"
 
     init {
         refreshUser()
@@ -25,7 +27,7 @@ class FirebaseBooksRepository : BooksDatabaseRepository {
     override fun refreshUser() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         databaseRef = currentUser?.let {
-            FirebaseDatabase.getInstance().getReference(it.uid)
+            FirebaseDatabase.getInstance(databaseUrl).getReference(it.uid)
         }
     }
 
@@ -63,7 +65,10 @@ class FirebaseBooksRepository : BooksDatabaseRepository {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
+                Log.e("FirebaseBooksRepository", "Firebase Database error: ${error.message}")
+                // Gracefully close the flow instead of propagating a fatal exception.
+                // This prevents crashes when permission is lost (e.g. during logout).
+                close()
             }
         }
 
@@ -78,7 +83,7 @@ class FirebaseBooksRepository : BooksDatabaseRepository {
         }
     }
 
-    override fun onUpadteBook(bookId: String, updatedBook: Book) {
+    override fun onUpdateBook(bookId: String, updatedBook: Book) {
         databaseRef?.child(bookId)?.setValue(updatedBook)
     }
     override fun updateBookStatus(bookId: String, status: ReadingStatus) {

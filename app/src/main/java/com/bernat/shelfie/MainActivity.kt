@@ -1,9 +1,5 @@
 package com.bernat.shelfie
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,13 +7,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -26,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -33,6 +33,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bernat.shelfie.data.local.AppDatabase
+import com.bernat.shelfie.data.local.UserStats
 import com.bernat.shelfie.ui.viewmodel.AccountViewModel
 import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
 import com.bernat.shelfie.ui.screens.auth.LoginLoadingScreen
@@ -48,8 +50,10 @@ import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.database.database
+import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.util.Date
 
 
 sealed class Navigation(val route: String) {
@@ -96,11 +100,18 @@ class MainActivity : ComponentActivity() {
         }
     )
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Punkt 3: Room - Zapisywanie daty logowania
+        val database = AppDatabase.getDatabase(this)
+        if (Firebase.auth.currentUser != null) {
+            lifecycleScope.launch {
+                database.userStatsDao().insertOrUpdate(UserStats(lastLoginDate = Date().toString()))
+            }
+        }
+
         setContent {
             ShelfieTheme {
                 Surface(Modifier.fillMaxSize()) {
@@ -108,56 +119,111 @@ class MainActivity : ComponentActivity() {
 
                     Firebase.database.setPersistenceEnabled(true)
 
-                    BottomNavigation(
+                    MainScreenWrapper(
                         navController,
                         accountViewModel,
                         Navigation.StartScreen.route,
                         bookDatabaseViewModel
                     )
-
-
                 }
             }
         }
     }
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNavigation(navController: NavHostController, accountViewModel: AccountViewModel, startDestination: String, booksDatabaseView: BooksDatabaseView){
+fun MainScreenWrapper(
+    navController: NavHostController,
+    accountViewModel: AccountViewModel,
+    startDestination: String,
+    booksDatabaseView: BooksDatabaseView
+) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Lista tras, na których pasek ma być ukryty
-    val screensWithoutBottomBar = listOf(
+    // Ekrany bez nawigacji
+    val authScreens = listOf(
         Navigation.StartScreen.route,
         Navigation.LoginScreen.route,
         Navigation.RegisterScreen.route,
         Navigation.LoginLoadingScreen.route
     )
 
-    Scaffold(
-        bottomBar = {
-            if (currentRoute !in screensWithoutBottomBar) {
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = currentRoute == Navigation.HomeScreen.route,
-                        onClick = { navController.navigate(Navigation.HomeScreen.route) },
-                        icon = { Text("Home") })
-                    NavigationBarItem(
-                        selected = currentRoute?.startsWith("addBookScreen") == true,
-                        onClick = { navController.navigate(Navigation.AddBookScreen.createRoute()) },
-                        icon = { Text("Add Book") })
-                    NavigationBarItem(
+    // Punkt 4: Navigation Drawer
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = currentRoute !in authScreens,
+        drawerContent = {
+            if (currentRoute !in authScreens) {
+                ModalDrawerSheet {
+                    Spacer(Modifier.height(12.dp))
+                    Text("Shelfie Menu", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
+                    Divider()
+                    NavigationDrawerItem(
+                        label = { Text("Mój Profil") },
                         selected = currentRoute == Navigation.ProfileScreen.route,
-                        onClick = { navController.navigate(Navigation.ProfileScreen.route) },
-                        icon = { Text("Profile") }
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(Navigation.ProfileScreen.route)
+                        },
+                        icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                    NavigationDrawerItem(
+                        label = { Text("Wyloguj się") },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(Navigation.StartScreen.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                            booksDatabaseView.onLogOut()
+                            accountViewModel.onLogout()
+                        },
+                        icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
             }
         }
-    ) { innerPadding ->
-        NavController(navController, accountViewModel, Modifier.padding(innerPadding), startDestination, booksDatabaseView)
+    ) {
+        Scaffold(
+            topBar = {
+                if (currentRoute !in authScreens) {
+                    TopAppBar(
+                        title = { Text("Shelfie") },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                            }
+                        }
+                    )
+                }
+            },
+            bottomBar = {
+                if (currentRoute !in authScreens) {
+                    NavigationBar {
+                        NavigationBarItem(
+                            selected = currentRoute == Navigation.HomeScreen.route,
+                            onClick = { navController.navigate(Navigation.HomeScreen.route) },
+                            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                            label = { Text("Home") }
+                        )
+                        NavigationBarItem(
+                            selected = currentRoute?.startsWith("addBookScreen") == true,
+                            onClick = { navController.navigate(Navigation.AddBookScreen.createRoute()) },
+                            icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
+                            label = { Text("Add") }
+                        )
+                    }
+                }
+            }
+        ) { innerPadding ->
+            NavController(navController, accountViewModel, Modifier.padding(innerPadding), startDestination, booksDatabaseView)
+        }
     }
 }
 
