@@ -1,5 +1,9 @@
 package com.bernat.shelfie
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -42,6 +47,7 @@ import com.bernat.shelfie.ui.screens.books.EditBookScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.database.database
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -91,6 +97,7 @@ class MainActivity : ComponentActivity() {
     )
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -99,12 +106,16 @@ class MainActivity : ComponentActivity() {
                 Surface(Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
 
+                    Firebase.database.setPersistenceEnabled(true)
+
                     BottomNavigation(
                         navController,
                         accountViewModel,
                         Navigation.StartScreen.route,
                         bookDatabaseViewModel
                     )
+
+
                 }
             }
         }
