@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.bernat.shelfie.Navigation
 import com.bernat.shelfie.domain.model.ReadingStatus
 import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
 
@@ -90,6 +91,10 @@ fun BookDetailsScreen(booksDatabaseView: BooksDatabaseView, navController: NavCo
                     text = "Data publikacji: ${book.publishDate}",
                     style = MaterialTheme.typography.bodyLarge
                 )
+
+                Button({navController.navigate(Navigation.EditBookScreen.route)}) {
+                    Text("Edytuj książkę")
+                }
             }
         } else {
             Text(text = "Nie wybrano książki.")

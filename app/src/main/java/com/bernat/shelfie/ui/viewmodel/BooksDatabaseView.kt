@@ -62,6 +62,10 @@ class BooksDatabaseView(
         repository.updateBookStatus(bookId, newStatus)
     }
 
+    fun onUpadteBook(bookId: String,upatedBook: Book){
+        repository.onUpadteBook(bookId,upatedBook)
+
+    }
     fun onDeleteBook(book: Book) {
         book.id?.let { id ->
             repository.deleteBook(id)
