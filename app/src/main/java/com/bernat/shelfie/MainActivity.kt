@@ -160,7 +160,7 @@ fun NavController(
             if (Firebase.auth.currentUser == null) {
                 StartScreen(navController)
             } else {
-               LoginLoadingScreen(navController,booksDatabaseView)
+               LoginLoadingScreen(navController,booksDatabaseView,accountViewModel)
             }
         }
         composable(Navigation.LoginScreen.route) {
@@ -178,7 +178,7 @@ fun NavController(
             RegisterScreen(navController, accountViewModel)
         }
         composable(Navigation.LoginLoadingScreen.route) {
-            LoginLoadingScreen(navController,booksDatabaseView)
+            LoginLoadingScreen(navController,booksDatabaseView,accountViewModel)
         }
         composable(Navigation.HomeScreen.route) {
             if (Firebase.auth.currentUser == null) {

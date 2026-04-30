@@ -22,7 +22,7 @@ import com.google.mlkit.common.sdkinternal.model.ModelFileHelper
 
 @Composable
 fun HomeScreen(booksDatabaseView: BooksDatabaseView,navController: NavController){
-    var testBooks =  booksDatabaseView.listOfBooks
+    var testBooks = remember {    booksDatabaseView.listOfBooks}
 
     println(testBooks)
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {

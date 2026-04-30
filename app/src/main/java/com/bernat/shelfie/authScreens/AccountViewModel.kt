@@ -1,8 +1,10 @@
 package com.bernat.shelfie.authScreens
 
+import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.launch
 
@@ -15,6 +17,8 @@ class AccountViewModel: ViewModel() {
 
         viewModelScope.launch {
             Firebase.auth.signInWithEmailAndPassword(email, password)
+
+
         }
 
     }
@@ -29,6 +33,7 @@ class AccountViewModel: ViewModel() {
     fun onLogout(){
         viewModelScope.launch {
             Firebase.auth.signOut()
+
         }
     }
 }

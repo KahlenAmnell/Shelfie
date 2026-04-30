@@ -1,6 +1,8 @@
 package com.bernat.shelfie.booksScreen
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -12,13 +14,18 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import okhttp3.internal.wait
 import kotlin.reflect.typeOf
 
 class BooksDatabaseView: ViewModel() {
 
-    var listOfBooks = mutableListOf<Book>()
+
+
+    var listOfBooks = mutableStateListOf<Book>()
 
     var currentBook by mutableStateOf<Book?>(null)
 
@@ -68,10 +75,14 @@ class BooksDatabaseView: ViewModel() {
         }
     }
 
-         fun  loadData(){
+        fun  loadData(){
             viewModelScope.launch {
+
                 databaseRef?.addValueEventListener(bookDatabaseListner)
+
+
             }
+
         }
 
     fun onAddBook(title: String, author: String, pageCount: Int, publishDate: String){
