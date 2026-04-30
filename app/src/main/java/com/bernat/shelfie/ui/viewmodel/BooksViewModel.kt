@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.bernat.shelfie.BuildConfig
 import com.bernat.shelfie.data.api.RetrofitClient
 import com.bernat.shelfie.data.model.BookItem
+import com.bernat.shelfie.data.repository.NetworkBooksRepository
+import com.bernat.shelfie.domain.repository.BooksRepository
 import kotlinx.coroutines.launch
 
 sealed class BookUiState {
@@ -17,7 +19,9 @@ sealed class BookUiState {
     data class Error(val message: String) : BookUiState()
 }
 
-class BooksViewModel : ViewModel() {
+class BooksViewModel(
+    private val repository: BooksRepository = NetworkBooksRepository(RetrofitClient.googleBooksService)
+) : ViewModel() {
     var uiState: BookUiState by mutableStateOf(BookUiState.Idle)
         private set
 
@@ -26,7 +30,8 @@ class BooksViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val apiKey = BuildConfig.GOOGLE_BOOKS_API_KEY
-                val response = RetrofitClient.googleBooksService.getBookByIsbn("isbn:$isbn", apiKey)
+                val response = repository.getBookByIsbn(isbn, apiKey)
+
                 if (response.isSuccessful) {
                     val bookResponse = response.body()
                     val firstBook = bookResponse?.items?.firstOrNull()

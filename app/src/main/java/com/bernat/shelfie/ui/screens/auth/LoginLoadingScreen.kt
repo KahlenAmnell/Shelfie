@@ -23,7 +23,6 @@ import kotlinx.coroutines.delay
 @Composable
 fun LoginLoadingScreen(navController: NavController, booksDatabaseView: BooksDatabaseView) {
     
-    // Stan animacji
     var startAnimation by remember { mutableStateOf(false) }
     
     val alpha by animateFloatAsState(
@@ -43,11 +42,10 @@ fun LoginLoadingScreen(navController: NavController, booksDatabaseView: BooksDat
 
     LaunchedEffect(Unit) {
         startAnimation = true
-        // Skrócone opóźnienie do 500ms (tylko dla płynności animacji wejścia)
         delay(500) 
 
         if (Firebase.auth.currentUser != null) {
-            booksDatabaseView.getRef()
+            booksDatabaseView.refreshUser()
             booksDatabaseView.loadData()
             navController.navigate(Navigation.HomeScreen.route) {
                 popUpTo(Navigation.LoginLoadingScreen.route) { inclusive = true }

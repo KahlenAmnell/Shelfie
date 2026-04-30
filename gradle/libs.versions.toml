@@ -17,6 +17,8 @@ mapsCompose = "6.4.1"
 googleServices = "4.4.2"
 ksp = "2.0.21-1.0.25"
 secrets = "2.0.1"
+mockk = "1.13.13"
+kotlinxCoroutinesTest = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +56,10 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx", ver
 # Maps
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "googleMaps" }
 maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
+
+# Testing
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
