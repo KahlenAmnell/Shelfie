@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
 import com.bernat.shelfie.R
-import com.bernat.shelfie.authScreens.AccountViewModel
-import com.bernat.shelfie.booksScreen.BooksDatabaseView
+import com.bernat.shelfie.ui.viewmodel.AccountViewModel
+import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -64,11 +64,17 @@ fun ProfileScreen(navController: NavController, accountViewModel: AccountViewMod
 
                 Button(
                     onClick = {
+                        // 1. Najpierw nawiguj
+                        navController.navigate(Navigation.StartScreen.route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                        
+                        // 2. Potem wyloguj
                         booksDatabaseView.onLogOut()
                         accountViewModel.onLogout()
-                        navController.navigate(Navigation.StartScreen.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
                     },
                     modifier = Modifier.size(width = 200.dp, height = 50.dp)
                 ) {

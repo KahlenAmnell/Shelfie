@@ -1,6 +1,5 @@
-package com.bernat.shelfie.authScreens
+package com.bernat.shelfie.ui.screens.auth
 
-import android.widget.Toast
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -10,28 +9,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
 import com.bernat.shelfie.R
-import com.bernat.shelfie.booksScreen.BooksDatabaseView
+import com.bernat.shelfie.ui.viewmodel.BooksDatabaseView
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.delay
 
 @Composable
 fun LoginLoadingScreen(navController: NavController, booksDatabaseView: BooksDatabaseView) {
-    val context = LocalContext.current
     
     // Stan animacji
     var startAnimation by remember { mutableStateOf(false) }
     
     val alpha by animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000),
+        animationSpec = tween(durationMillis = 800),
         label = "alphaAnimation"
     )
     
@@ -46,8 +43,8 @@ fun LoginLoadingScreen(navController: NavController, booksDatabaseView: BooksDat
 
     LaunchedEffect(Unit) {
         startAnimation = true
-        // Czekamy 2 sekundy, aby ekran splash był widoczny
-        delay(2000) 
+        // Skrócone opóźnienie do 500ms (tylko dla płynności animacji wejścia)
+        delay(500) 
 
         if (Firebase.auth.currentUser != null) {
             booksDatabaseView.getRef()

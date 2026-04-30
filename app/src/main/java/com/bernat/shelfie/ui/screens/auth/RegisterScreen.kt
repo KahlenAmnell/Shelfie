@@ -1,4 +1,4 @@
-package com.bernat.shelfie.authScreens
+package com.bernat.shelfie.ui.screens.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -9,6 +9,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,22 +19,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.bernat.shelfie.Navigation
+import com.bernat.shelfie.ui.viewmodel.AccountViewModel
 
 @Composable
 fun RegisterScreen(navController: NavController, accountViewModel: AccountViewModel) {
-    var emailTextFieldText by remember { mutableStateOf("") }
-    var passwordextFieldText by remember { mutableStateOf("") }
-    var comfirmPsswordextFieldText by remember { mutableStateOf("") }
     val context = LocalContext.current
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    fun clear() {
-        emailTextFieldText = ""
-        passwordextFieldText = ""
-        comfirmPsswordextFieldText = ""
+    // Obsługa błędów z Firebase
+    LaunchedEffect(Unit) {
+        accountViewModel.authError.collect { errorMessage ->
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+        }
     }
 
     Surface(
@@ -64,8 +68,8 @@ fun RegisterScreen(navController: NavController, accountViewModel: AccountViewMo
 
             // Email Field
             OutlinedTextField(
-                value = emailTextFieldText,
-                onValueChange = { emailTextFieldText = it },
+                value = accountViewModel.registerEmail,
+                onValueChange = { accountViewModel.registerEmail = it },
                 label = { Text("E-mail") },
                 placeholder = { Text("twoj@email.com") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
@@ -79,11 +83,17 @@ fun RegisterScreen(navController: NavController, accountViewModel: AccountViewMo
 
             // Password Field
             OutlinedTextField(
-                value = passwordextFieldText,
-                onValueChange = { passwordextFieldText = it },
+                value = accountViewModel.registerPassword,
+                onValueChange = { accountViewModel.registerPassword = it },
                 label = { Text("Hasło") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                visualTransformation = PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = null)
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -94,11 +104,17 @@ fun RegisterScreen(navController: NavController, accountViewModel: AccountViewMo
 
             // Confirm Password Field
             OutlinedTextField(
-                value = comfirmPsswordextFieldText,
-                onValueChange = { comfirmPsswordextFieldText = it },
+                value = accountViewModel.confirmPassword,
+                onValueChange = { accountViewModel.confirmPassword = it },
                 label = { Text("Potwierdź hasło") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                visualTransformation = PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                        Icon(imageVector = image, contentDescription = null)
+                    }
+                },
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -110,19 +126,22 @@ fun RegisterScreen(navController: NavController, accountViewModel: AccountViewMo
             // Register Button
             Button(
                 onClick = {
-                    if (passwordextFieldText != comfirmPsswordextFieldText) {
+                    val email = accountViewModel.registerEmail
+                    val password = accountViewModel.registerPassword
+                    val confirm = accountViewModel.confirmPassword
+
+                    if (password != confirm) {
                         Toast.makeText(context, "Hasła są różne", Toast.LENGTH_SHORT).show()
-                        // Usunąłem czyszczenie pól tutaj, aby użytkownik mógł poprawić błąd bez wpisywania wszystkiego od nowa
-                    } else if (passwordextFieldText == "" || emailTextFieldText == "") {
+                    } else if (password == "" || email == "") {
                         Toast.makeText(context, "Proszę wprowadzić wszystkie wymagane dane", Toast.LENGTH_SHORT).show()
-                    } else if (!(emailTextFieldText.contains("@") && emailTextFieldText.contains("."))) {
+                    } else if (!(email.contains("@") && email.contains("."))) {
                         Toast.makeText(context, "Proszę wprowadzić prawidłowy email", Toast.LENGTH_SHORT).show()
-                    } else if (passwordextFieldText.length < 8) {
+                    } else if (password.length < 8) {
                         Toast.makeText(context, "Hasło musi mieć co najmniej 8 znaków", Toast.LENGTH_SHORT).show()
-                    } else if (!(passwordextFieldText.any { it.isUpperCase() } && passwordextFieldText.any { it.isDigit() })) {
+                    } else if (!(password.any { it.isUpperCase() } && password.any { it.isDigit() })) {
                         Toast.makeText(context, "Hasło musi zawierać duże litery oraz cyfry", Toast.LENGTH_SHORT).show()
                     } else {
-                        accountViewModel.onRegister(emailTextFieldText, passwordextFieldText)
+                        accountViewModel.onRegister(email, password)
                         navController.navigate(Navigation.LoginScreen.route)
                     }
                 },
