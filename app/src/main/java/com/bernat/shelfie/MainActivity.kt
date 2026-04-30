@@ -1,7 +1,6 @@
 package com.bernat.shelfie
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,9 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -34,10 +30,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bernat.shelfie.authScreens.AccountViewModel
@@ -49,6 +45,7 @@ import com.bernat.shelfie.booksScreen.AddWithIsbnScreen
 import com.bernat.shelfie.booksScreen.BookDetailsScreen
 import com.bernat.shelfie.booksScreen.BooksDatabaseView
 import com.bernat.shelfie.booksScreen.HomeScreen
+import com.bernat.shelfie.ui.screens.ProfileScreen
 import com.bernat.shelfie.ui.theme.ShelfieTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -63,6 +60,7 @@ sealed class Navigation(val route: String) {
     object AddWithIsbnScreen : Navigation("addWithIsbnScreen")
 
     object BookDetailsScreen : Navigation("bookDetailsScreen")
+    object ProfileScreen : Navigation("profileScreen")
 
     // Trasa z opcjonalnymi argumentami
     object AddBookScreen : Navigation("addBookScreen?isbn={isbn}&title={title}&author={author}&year={year}&pages={pages}") {
@@ -120,25 +118,35 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BottomNavigation(navController: NavHostController,accountViewModel: AccountViewModel,startDestination: String,booksDatabaseView: BooksDatabaseView){
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // Lista tras, na których pasek ma być ukryty
+    val screensWithoutBottomBar = listOf(
+        Navigation.StartScreen.route,
+        Navigation.LoginScreen.route,
+        Navigation.RegisterScreen.route,
+        Navigation.LoginLoadingScreen.route
+    )
+
     Scaffold(
         bottomBar = {
-            NavigationBar() {
-
+            if (currentRoute !in screensWithoutBottomBar) {
+                NavigationBar() {
                     NavigationBarItem(
-                        false,
+                        currentRoute == Navigation.HomeScreen.route,
                         { navController.navigate(Navigation.HomeScreen.route) },
                         icon = { Text("Home") })
                     NavigationBarItem(
-                        false,
+                        currentRoute?.startsWith("addBookScreen") == true,
                         { navController.navigate(Navigation.AddBookScreen.createRoute()) },
                         icon = { Text("Add Book") })
                     NavigationBarItem(
-                        false,
-                        { navController.navigate(Navigation.LoginScreen.route) },
-                        icon = { Text("Profile") })
-
-
-
+                        selected = currentRoute == Navigation.ProfileScreen.route,
+                        onClick = { navController.navigate(Navigation.ProfileScreen.route) },
+                        icon = { Text("Profile") }
+                    )
+                }
             }
         }
 
@@ -164,15 +172,14 @@ fun NavController(
             }
         }
         composable(Navigation.LoginScreen.route) {
-            if(Firebase.auth.currentUser == null) {
-                LoginScreen(
-                    navController,
-                    accountViewModel
-                )
-            }else{
-                ProfileScreen(navController,accountViewModel,booksDatabaseView)
+            LoginScreen(navController, accountViewModel)
+        }
+        composable(Navigation.ProfileScreen.route) {
+            if (Firebase.auth.currentUser == null) {
+                navController.navigate(Navigation.LoginScreen.route)
+            } else {
+                ProfileScreen(navController, accountViewModel, booksDatabaseView)
             }
-
         }
         composable(Navigation.RegisterScreen.route) {
             RegisterScreen(navController, accountViewModel)
